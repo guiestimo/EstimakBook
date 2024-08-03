@@ -139,3 +139,127 @@ func (u usuarios) BuscarPorEmail(email string) (models.Usuario, error) {
 
 	return usuario, nil
 }
+
+func (u usuarios) Seguir(usuarioId uint64, seguidorId uint64) error {
+	statement, erro := u.db.Prepare(
+		"INSERT IGNORE INTO SEGUIDORES (usuario_id, seguidor_id) values (?, ?)")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro = statement.Exec(usuarioId, seguidorId); erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+func (u usuarios) PararDeSeguirUsuario(usuarioId uint64, seguidorId uint64) error {
+	statement, erro := u.db.Prepare(
+		"DELETE FROM SEGUIDORES WHERE usuario_id = ? AND seguidor_id = ?")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro = statement.Exec(usuarioId, seguidorId); erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+func (u usuarios) BuscarSeguidores(usuarioId uint64) ([]models.Usuario, error) {
+	linhas, erro := u.db.Query(`
+	SELECT u.id, u.nome, u.nick, u.email, u.criadoEm
+	FROM seguidores S INNER JOIN usuarios u ON s.seguidor_id = u.id
+	WHERE s.usuario_id = ?`, usuarioId)
+
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var usuarios []models.Usuario
+	if linhas.Next() {
+		var usuario models.Usuario
+
+		if erro = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); erro != nil {
+			return nil, erro
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
+
+func (u usuarios) BuscarSeguindo(usuarioId uint64) ([]models.Usuario, error) {
+	linhas, erro := u.db.Query(`
+	SELECT u.id, u.nome, u.nick, u.email, u.criadoEm
+	FROM usuarios u INNER JOIN seguidores s ON u.id = s.usuario_id
+	WHERE s.seguidor_id = ?`, usuarioId)
+
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var usuarios []models.Usuario
+	if linhas.Next() {
+		var usuario models.Usuario
+
+		if erro = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		); erro != nil {
+			return nil, erro
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
+
+func (u usuarios) BuscarSenha(usuarioId uint64) (string, error) {
+	linha, erro := u.db.Query("SELECT SENHA FROM USUARIOS WHERE ID = ?", usuarioId)
+	if erro != nil {
+		return "", erro
+	}
+	defer linha.Close()
+
+	var usuario models.Usuario
+	if linha.Next() {
+		if erro = linha.Scan(&usuario.Senha); erro != nil {
+			return "", erro
+		}
+	}
+
+	return usuario.Senha, nil
+}
+
+func (u usuarios) AtualizarSenha(usuarioId uint64, senhaComHash string) error {
+	statement, erro := u.db.Prepare(
+		"UPDATE USUARIOS SET senha = ? WHERE ID = ?")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro = statement.Exec(senhaComHash, usuarioId); erro != nil {
+		return erro
+	}
+
+	return nil
+}
