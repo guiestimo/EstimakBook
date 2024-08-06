@@ -315,16 +315,21 @@ func BuscarSeguindo(w http.ResponseWriter, r *http.Request) {
 }
 
 func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
-	usuarioIdNoToken, erro := auth.ExtrairUsuarioId(r)
+	requestBody, erro := io.ReadAll(r.Body)
 	if erro != nil {
-		responses.Erro(w, http.StatusUnauthorized, erro)
+		responses.Erro(w, http.StatusUnprocessableEntity, erro)
 		return
 	}
 
 	var senha models.Senha
-	requestBody, erro := io.ReadAll(r.Body)
-	if erro := json.Unmarshal(requestBody, &senha); erro != nil {
+	if erro = json.Unmarshal(requestBody, &senha); erro != nil {
 		responses.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	usuarioIdNoToken, erro := auth.ExtrairUsuarioId(r)
+	if erro != nil {
+		responses.Erro(w, http.StatusUnauthorized, erro)
 		return
 	}
 
@@ -359,5 +364,4 @@ func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responses.JSON(w, http.StatusNoContent, nil)
-
 }
