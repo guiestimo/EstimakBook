@@ -1,18 +1,32 @@
 package controllers
 
 import (
-	"api/src/auth"
-	"api/src/banco"
-	"api/src/models"
-	"api/src/repositories"
-	"api/src/responses"
-	"api/src/security"
+	"api/cmd/auth"
+	"api/cmd/banco"
+	"api/cmd/models"
+	"api/cmd/repositories"
+	"api/cmd/responses"
+	"api/cmd/security"
 	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
 )
 
+// Login
+//
+//		@Summary		Login
+//		@Description	Login
+//		@Tags			login
+//		@Accept			json
+//		@Produce		json
+//		@Param usuario body models.Usuario true "Login Credentials"
+//		@Success		200 {object} models.DadosAutenticacao
+//		@Failure		422 {object} error
+//		@Failure		400 {object} error
+//		@Failure		401 {object} error
+//	 	@Failure		500 {object} error
+//		@Router			/login [get]
 func Login(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, erro := io.ReadAll(r.Body)
 	if erro != nil {
@@ -52,6 +66,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	usuarioId := strconv.FormatUint(usuarioSalvoNoBanco.ID, 10)
-
-	responses.JSON(w, http.StatusOK, models.DadosAutenticacao{ID: usuarioId, Token: token})
+	dadosAutenticacao := models.DadosAutenticacao{ID: usuarioId, Token: token}
+	responses.JSON(w, http.StatusOK, dadosAutenticacao)
 }

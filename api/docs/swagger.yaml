@@ -1,0 +1,62 @@
+definitions:
+  models.DadosAutenticacao:
+    properties:
+      id:
+        type: string
+      token:
+        type: string
+    type: object
+  models.Usuario:
+    properties:
+      criadoEm:
+        type: string
+      email:
+        type: string
+      id:
+        description: 'omitempty: Remove do json o ID quando nao é enviado no request'
+        type: integer
+      nick:
+        type: string
+      nome:
+        type: string
+      senha:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /login:
+    get:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: Login Credentials
+        in: body
+        name: usuario
+        required: true
+        schema:
+          $ref: '#/definitions/models.Usuario'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DadosAutenticacao'
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "422":
+          description: Unprocessable Entity
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Login
+      tags:
+      - login
+swagger: "2.0"

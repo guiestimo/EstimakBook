@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"api/src/config"
+	"api/cmd/config"
 	"errors"
 	"fmt"
 	"net/http"

@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"api/src/auth"
-	"api/src/banco"
-	"api/src/models"
-	"api/src/repositories"
-	"api/src/responses"
-	"api/src/security"
+	"api/cmd/auth"
+	"api/cmd/banco"
+	"api/cmd/models"
+	"api/cmd/repositories"
+	"api/cmd/responses"
+	"api/cmd/security"
 	"encoding/json"
 	"errors"
 	"io"
