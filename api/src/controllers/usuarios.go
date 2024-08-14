@@ -315,21 +315,28 @@ func BuscarSeguindo(w http.ResponseWriter, r *http.Request) {
 }
 
 func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
-	requestBody, erro := io.ReadAll(r.Body)
+	usuarioIDNoToken, erro := auth.ExtrairUsuarioId(r)
 	if erro != nil {
-		responses.Erro(w, http.StatusUnprocessableEntity, erro)
+		responses.Erro(w, http.StatusUnauthorized, erro)
 		return
 	}
 
-	var senha models.Senha
-	if erro = json.Unmarshal(requestBody, &senha); erro != nil {
+	parametros := mux.Vars(r)
+	usuarioID, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if erro != nil {
 		responses.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
 
-	usuarioIdNoToken, erro := auth.ExtrairUsuarioId(r)
-	if erro != nil {
-		responses.Erro(w, http.StatusUnauthorized, erro)
+	if usuarioIDNoToken != usuarioID {
+		responses.Erro(w, http.StatusForbidden, errors.New("não é possível atualizar a senha de um usuário que não seja o seu"))
+		return
+	}
+
+	corpoRequisicao, erro := io.ReadAll(r.Body)
+	var senha models.Senha
+	if erro = json.Unmarshal(corpoRequisicao, &senha); erro != nil {
+		responses.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
 
@@ -341,14 +348,14 @@ func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositories.NovoRepositorioDeUsuarios(db)
-	senhaSalvaNoBanco, erro := repositorio.BuscarSenha(usuarioIdNoToken)
+	senhaSalvaNoBanco, erro := repositorio.BuscarSenha(usuarioID)
 	if erro != nil {
 		responses.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}
 
 	if erro = security.VerificarSenha(senhaSalvaNoBanco, senha.SenhaAtual); erro != nil {
-		responses.Erro(w, http.StatusUnauthorized, errors.New("a senha atual nao condiz com a que está salva no banco"))
+		responses.Erro(w, http.StatusUnauthorized, errors.New("a senha atual não condiz com a que está salva no banco"))
 		return
 	}
 
@@ -358,7 +365,7 @@ func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if erro = repositorio.AtualizarSenha(usuarioIdNoToken, string(senhaComHash)); erro != nil {
+	if erro = repositorio.AtualizarSenha(usuarioID, string(senhaComHash)); erro != nil {
 		responses.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}

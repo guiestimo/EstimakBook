@@ -44,7 +44,7 @@ var rotasUsuarios = []Rota{
 	},
 	{
 		URI:                "/usuarios/{usuarioId}/parar-de-seguir",
-		Metodo:             http.MethodDelete,
+		Metodo:             http.MethodPost,
 		Funcao:             controllers.PararDeSeguirUsuario,
 		RequerAutenticacao: true,
 	},
@@ -64,7 +64,7 @@ var rotasUsuarios = []Rota{
 		// É utilizado o post porque a cada atualização de senha, é gerado um novo HASH. O método put é usado para atualizar nos casos de
 		// "Se eu rodar 2 requisicoes de autalizacao, na segunda em diante nenhuma linha vai ser afetada porque o dado ja foi atualizado"
 
-		URI:                "/usuarios/atualizar-senha",
+		URI:                "/usuarios/{usuarioId}/atualizar-senha",
 		Metodo:             http.MethodPost,
 		Funcao:             controllers.AtualizarSenha,
 		RequerAutenticacao: true,

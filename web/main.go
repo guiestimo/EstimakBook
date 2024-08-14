@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"web/src/config"
+	"web/src/cookies"
 	"web/src/router"
+	"web/src/utils"
 )
 
 func main() {
-	fmt.Println("Rodando WebAPp!")
-
+	config.Carregar()
+	cookies.Configurar()
+	utils.CarregarTemplates()
 	r := router.Gerar()
-	//fmt.Printf("Escutando na porta %d", ":3000")
-	//log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", ":3000"), r))
-	log.Fatal(http.ListenAndServe(":3000", r))
+
+	fmt.Printf("Escutando na porta %d\n", config.ApiPort)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.ApiPort), r))
 }
